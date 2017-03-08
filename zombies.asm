@@ -1,7 +1,7 @@
 .data 
 maze:	.ascii
 	# 0123456701234567012345670123456701234567012345670123456701234567
-	 "x  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",    # 0
+	 " cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",    # 0
 	 "x      xx      xx      xx      xx      xx      xx      xx      x",    # 1
 	 "x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x",    # 2
 	 "x x  x xx x  x xx x  x xx x  x xx x  x xx x  x xx x  x xx x  x x",    # 3
@@ -75,15 +75,33 @@ foundX:	.asciiz "found an x \n"
 #syscall
 
 jal drawBoard
+li $a0 0
+li $a1 0
+li $a2 3
+jal _setLED
+
+#addi $s0 $s0 0 #position of the person
+
+
+
+
 li $v0 10
 syscall
 
 drawBoard:
+	addi $sp $sp -24
+	sw $s0 0($sp)
+	sw $s1 4($sp)
+	sw $s2 8($sp)
+	sw $s3 16($sp)
+	sw $ra 20($sp)
+	
 	la $s1 maze
 	li $s2 0
 	li $s3 64
 	
 drawBoardLoop:
+
 	lb $s0 0($s1)
 	beq $s0 120 DivAndDrawLED
 	j incrementAndJump
@@ -102,13 +120,14 @@ incrementAndJump:
 	beq $s2 4096 return
 	j drawBoardLoop
 
-
 return:
-jr $ra
-
-
-
-
+	lw $s0 0($sp)
+	lw $s1 4($sp)
+	lw $s2 8($sp)
+	lw $s3 16($sp)
+	lw $ra 20($sp)
+	addi $sp $sp 24	
+        jr $ra
 
 
 _setLED:
@@ -159,3 +178,41 @@ _getLED:
 	srlv $t2,$t2,$t1    # shift LED value to lsb position
 	andi $v0,$t2,0x3    # mask off any remaining upper bits
 	jr   $ra
+
+poll:	la	$v0,0xffff0000		# address for reading key press status
+	lw	$t0,0($v0)		# read the key press status
+	andi	$t0,$t0,1
+	beq	$t0,$0,poll		# no key pressed
+	lw	$t0,4($v0)		# read key value
+	
+lkey:	addi	$v0,$t0,-226		# check for left key press
+	bne	$v0,$0,rkey		# wasn't left key, so try right key
+	addi	$s1,$s1,-1		# decrement current color
+	andi	$s1,$s1,3		# mask high bits after decrement
+	move	$a0,$s1			# argument for call
+	#move character to the left
+	
+	j	poll
+	
+rkey:	addi	$v0,$t0,-227		# check for right key press
+	bne	$v0,$0,bkey		# wasn't right key, so check for center
+	addi	$s1,$s1,1		# increment current color
+	andi	$s1,$s1,3		# mask high bits after increment
+	move	$a0,$s1			# argument for call
+	#move char to right
+	j	poll
+	
+bkey:	addi	$v0,$t0,-66		# check for center key press
+	bne	$v0,$0,poll		# invalid key, ignore it
+	li	$v0,10			# terminate program
+	syscall
+
+removeOldCharacter:
+drawCharacter
+#takes position in $a0 returns x in v0 and y in v1
+getPositionFromNumber:
+	li $t0 64;
+	div $a0 $t0
+	mflo $v1 
+	mfhi $v0
+	
