@@ -1,7 +1,7 @@
 .data 
 maze:	.ascii
 	# 0123456701234567012345670123456701234567012345670123456701234567
-	 "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",    # 0
+	 "x  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",    # 0
 	 "x      xx      xx      xx      xx      xx      xx      xx      x",    # 1
 	 "x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x",    # 2
 	 "x x  x xx x  x xx x  x xx x  x xx x  x xx x  x xx x  x xx x  x x",    # 3
@@ -74,37 +74,33 @@ foundX:	.asciiz "found an x \n"
 #li $v0 11
 #syscall
 
-la $a0 maze
 jal drawBoard
 li $v0 10
-
 syscall
 
 drawBoard:
-
-li $t0 0 #counter
-li $t1 64
-move $t4 $a0
-
+	la $s1 maze
+	li $s2 0
+	li $s3 64
+	
 drawBoardLoop:
-lb $t3 0($t4)
-beq $t3 120 divAndDrawLED
-addi $t4 $t4 1 #increment address
-addi $t0 $t0 1 #incement counter
-beq $t0 4096 return
-jr $ra
-j drawBoardLoop
+	lb $s0 0($s1)
+	beq $s0 120 DivAndDrawLED
+	addi $s1 $s1 1
+	addi $s2 $s2 1
+	beq $s2 4096 return
+	j drawBoardLoop
 
-divAndDrawLED:
-div $t0 $t1
-mflo $a1
-mfhi $a0 
-li $a2 2
-jal _setLED
-addi $t4 $t4 1 #increment address
-addi $t0 $t0 1 #incement counter
-#beq $t0 4096 return
-j drawBoardLoop
+DivAndDrawLED:
+	div $s2 $s3
+	mflo $a1 
+	mfhi $a0
+	li $a2 2
+	jal _setLED
+	addi $s1 $s1 1
+	addi $s2 $s2 1
+	beq $s2 4096 return
+	j drawBoardLoop
 
 
 return:
