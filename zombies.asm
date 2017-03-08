@@ -82,19 +82,24 @@ syscall
 drawBoard:
 la $a0 maze
 li $t0 0 #counter
-li $t1 16
+li $t1 64
 
 drawBoardLoop:
-#lb $t3 1($a0)
+lb $t3 1($a0)
+beq $t3 78 divAndDrawLED
+
+divAndDrawLED:
 div $t0 $t1
 mflo $a1
-mfhi $a0
-
+mfhi $a0 
 li $a2 2
 jal _setLED
-#move $a0 $t2
-#li $v0 11
-#syscall
+addi $a0 $a0 1 #increment address
+addi $t0 $t0 1 #incement counter
+j drawBoardLoop
+
+
+
 jr $ra
 
 
