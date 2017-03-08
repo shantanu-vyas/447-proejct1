@@ -86,10 +86,7 @@ drawBoard:
 drawBoardLoop:
 	lb $s0 0($s1)
 	beq $s0 120 DivAndDrawLED
-	addi $s1 $s1 1
-	addi $s2 $s2 1
-	beq $s2 4096 return
-	j drawBoardLoop
+	j incrementAndJump
 
 DivAndDrawLED:
 	div $s2 $s3
@@ -97,7 +94,10 @@ DivAndDrawLED:
 	mfhi $a0
 	li $a2 2
 	jal _setLED
-	addi $s1 $s1 1
+	j incrementAndJump
+	
+incrementAndJump:
+        addi $s1 $s1 1
 	addi $s2 $s2 1
 	beq $s2 4096 return
 	j drawBoardLoop
