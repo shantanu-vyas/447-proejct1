@@ -67,26 +67,33 @@ maze:	.ascii
 	 "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  "     # 63
 	# for each "x", turn the corresponding LED to orange.  The other LEDs should
 	# be set to off.
-
+foundX:	.asciiz "found an x \n"
 .text
 #la $a0 maze
 #lb $a0 0($a0)
 #li $v0 11
 #syscall
 
-
+la $a0 maze
 jal drawBoard
 li $v0 10
+
 syscall
 
 drawBoard:
-la $a0 maze
+
 li $t0 0 #counter
 li $t1 64
+move $t4 $a0
 
 drawBoardLoop:
-lb $t3 1($a0)
-beq $t3 78 divAndDrawLED
+lb $t3 0($t4)
+beq $t3 120 divAndDrawLED
+addi $t4 $t4 1 #increment address
+addi $t0 $t0 1 #incement counter
+beq $t0 4096 return
+jr $ra
+j drawBoardLoop
 
 divAndDrawLED:
 div $t0 $t1
@@ -94,12 +101,13 @@ mflo $a1
 mfhi $a0 
 li $a2 2
 jal _setLED
-addi $a0 $a0 1 #increment address
+addi $t4 $t4 1 #increment address
 addi $t0 $t0 1 #incement counter
+#beq $t0 4096 return
 j drawBoardLoop
 
 
-
+return:
 jr $ra
 
 
