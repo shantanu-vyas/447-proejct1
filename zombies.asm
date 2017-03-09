@@ -68,6 +68,7 @@ maze:	.ascii
 	# for each "x", turn the corresponding LED to orange.  The other LEDs should
 	# be set to off.
 foundX:	.asciiz "found an x \n"
+called: .asciiz "called\n"
 .text
 #la $a0 maze
 #lb $a0 0($a0)
@@ -76,10 +77,11 @@ foundX:	.asciiz "found an x \n"
 
 jal drawBoard
 li $a0 0
-li $a1 0
-li $a2 3
-jal _setLED
+jal drawCharacter
+li $a0 0
+#j poll
 
+jal removeOldCharacter
 #addi $s0 $s0 0 #position of the person
 
 
@@ -110,6 +112,10 @@ DivAndDrawLED:
 	div $s2 $s3
 	mflo $a1 
 	mfhi $a0
+	#move $a0 $s0 
+	#jal getPositionFromNumber
+	#move $a0 $v1
+	#move $a1 $v0
 	li $a2 2
 	jal _setLED
 	j incrementAndJump
@@ -185,34 +191,39 @@ poll:	la	$v0,0xffff0000		# address for reading key press status
 	beq	$t0,$0,poll		# no key pressed
 	lw	$t0,4($v0)		# read key value
 	
-lkey:	addi	$v0,$t0,-226		# check for left key press
-	bne	$v0,$0,rkey		# wasn't left key, so try right key
-	addi	$s1,$s1,-1		# decrement current color
-	andi	$s1,$s1,3		# mask high bits after decrement
-	move	$a0,$s1			# argument for call
-	#move character to the left
 	
-	j	poll
 	
 rkey:	addi	$v0,$t0,-227		# check for right key press
-	bne	$v0,$0,bkey		# wasn't right key, so check for center
-	addi	$s1,$s1,1		# increment current color
-	andi	$s1,$s1,3		# mask high bits after increment
-	move	$a0,$s1			# argument for call
+	bne	$v0,$0,poll		# wasn't right key, so check for center
 	#move char to right
-	j	poll
 	
-bkey:	addi	$v0,$t0,-66		# check for center key press
-	bne	$v0,$0,poll		# invalid key, ignore it
-	li	$v0,10			# terminate program
-	syscall
-
+	j	poll	
+	
+#a0 paramter
 removeOldCharacter:
-drawCharacter
-#takes position in $a0 returns x in v0 and y in v1
-getPositionFromNumber:
-	li $t0 64;
+	addi $sp $sp -4
+	sw $ra 0($sp)
+	li $t0 64
 	div $a0 $t0
-	mflo $v1 
-	mfhi $v0
-	
+	mflo $a1 
+	mfhi $a0
+	li $a2 0
+	jal _setLED
+	lw $ra 0($sp)
+	addi $sp $sp 4
+	jr $ra
+
+#a0 parameter for place
+drawCharacter:
+	addi $sp $sp -4
+	sw $ra 0($sp)
+	li $t0 64
+	div $a0 $t0 
+	mflo $a1 
+	mfhi $a0
+	li $a2 3
+	jal _setLED
+
+	lw $ra 0($sp)
+	addi $sp $sp 4
+	jr $ra
