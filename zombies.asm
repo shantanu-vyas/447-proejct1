@@ -76,12 +76,12 @@ called: .asciiz "called\n"
 #syscall
 
 jal drawBoard
-li $a0 0
+li $t9 0
 jal drawCharacter
-li $a0 0
-#j poll
+#li $a0 0
+j poll
 
-jal removeOldCharacter
+#jal removeOldCharacter
 #addi $s0 $s0 0 #position of the person
 
 
@@ -194,10 +194,56 @@ poll:	la	$v0,0xffff0000		# address for reading key press status
 	
 	
 rkey:	addi	$v0,$t0,-227		# check for right key press
-	bne	$v0,$0,poll		# wasn't right key, so check for center
+	bne	$v0,$0,lkey		# wasn't right key, so check for center
 	#move char to right
+	move $a0 $t9
+	jal removeOldCharacter
+	addi $t9 $t9 1
+	move $a0 $t9	
+	li $v0 1
+	syscall
+	jal drawCharacter
 	
 	j	poll	
+
+lkey:	addi	$v0,$t0,-226		# check for right key press
+	bne	$v0,$0,dkey		# wasn't right key, so check for center
+	#move char to right
+	move $a0 $t9
+	jal removeOldCharacter
+	addi $t9 $t9 -1
+	move $a0 $t9
+	li $v0 1
+	syscall
+	jal drawCharacter
+	
+	j	poll	
+
+dkey:	addi	$v0,$t0,-225		# check for right key press
+	bne	$v0,$0,ukey		# wasn't right key, so check for center
+	#move char to right
+	move $a0 $t9
+	jal removeOldCharacter
+	addi $t9 $t9 64
+	move $a0 $t9
+	li $v0 1
+	syscall
+	jal drawCharacter
+	
+	j	poll	
+
+ukey:	addi	$v0,$t0,-224		# check for right key press
+	bne	$v0,$0,poll		# wasn't right key, so check for center
+	#move char to right
+	move $a0 $t9
+	jal removeOldCharacter
+	addi $t9 $t9 -64
+	move $a0 $t9
+	li $v0 1
+	syscall
+	jal drawCharacter
+	
+	j	poll															
 	
 #a0 paramter
 removeOldCharacter:
