@@ -77,6 +77,7 @@ called: .asciiz "called\n"
 
 jal drawBoard
 li $t9 0
+move $a0 $t9
 jal drawCharacter
 #li $a0 0
 j poll
