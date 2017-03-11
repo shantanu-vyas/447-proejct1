@@ -198,7 +198,7 @@ bkey:
 	bne $v0, $0, rkey	
 	jal drawBoard
 	li $t9 0 #player position
-	li $t8 0 #turn counter
+	li $t7 0 #turn counter
 	move $a0 $t9 #should probably hold this somewhere other than t9 DONT USE t9 FOR TEMP
 	jal drawCharacter
 	#li $v0 4
@@ -218,6 +218,7 @@ rkey:	addi	$v0,$t0,-227		# check for right key press
 	jal removeOldCharacter
 	addi $t9 $t9 1
 	move $a0 $t9	
+	addi $t7 $t7 1
 	#li $v0 1
 	#syscall
 	jal drawCharacter
@@ -238,6 +239,7 @@ lkey:	addi	$v0,$t0,-226		# check for right key press
 	move $a0 $t9
 	#li $v0 1
 	#syscall
+	addi $t7 $t7 1
 	jal drawCharacter		
 	j	poll	
 
@@ -254,6 +256,7 @@ dkey:	addi	$v0,$t0,-225		# check for right key press
 	move $a0 $t9
 	#li $v0 1
 	#syscall
+	addi $t7 $t7 1
 	jal drawCharacter
 	j	poll	
 	
@@ -273,6 +276,7 @@ ukey:	addi	$v0,$t0,-224		# check for right key press
 	move $a0 $t9
 	#li $v0 1
 	#syscall
+	addi $t7 $t7 1
 	jal drawCharacter
 	j	poll		
 
@@ -342,7 +346,7 @@ wonGame:
 	la $a0 won
 	li $v0 4
 	syscall
-	move $a0 $t8
+	move $a0 $t7
 	li $v0 1
 	syscall
 	la $a0 wonTurns
