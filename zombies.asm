@@ -131,10 +131,7 @@ quadrant4MaxY:	.byte 64
 
 j poll
 
-#jal removeOldCharacter
-#addi $s0 $s0 0 #position of the person
-
-
+#jal moveZombie1
 
 
 li $v0 10
@@ -566,6 +563,7 @@ hasZombie4TimeElapsed:
 
 
 returnTrueTime:
+	jal moveZombie1
 	lw $ra 0($sp)
 	lw $s0 4($sp)
 	addi $sp $sp 8
@@ -706,3 +704,90 @@ checkCollision4:
 	lw $s0 4($sp)
 	addi $sp $sp 8
 	jr $ra
+
+#return -64 up, 64 for down, -1 for left, 1 for right in $v0
+getRandomZombieDirection:
+	addi $sp $sp -4
+	sw $ra 0($sp)
+	jal getTime
+	
+	li $v0 42
+	move $a0 $v0 #make random seed based off time (better for randomness)
+	li $a1 4
+	syscall
+	
+	beq $a0 0 returnUp
+	beq $a0 1 returnDown
+	beq $a0 2 returnLeft
+	beq $a0 3 returnRight	
+	
+	
+returnUp:
+	li $v0 -64
+	lw $ra 0($sp)
+	addi $sp $sp 4
+	jr $ra
+returnDown:
+	li $v0 64
+	lw $ra 0($sp)
+	addi $sp $sp 4
+	jr $ra
+returnLeft:
+	li $v0 -1
+	lw $ra 0($sp)
+	addi $sp $sp 4
+	jr $ra
+returnRight:
+	li $v0 1
+	lw $ra 0($sp)
+	addi $sp $sp 4
+	jr $ra
+
+
+moveZombie1:
+	addi $sp $sp -12
+	sw $ra 0($sp)
+	sw $s0 4($sp)
+	sw $s1 8($sp)
+	
+	jal getRandomZombieDirection
+	move $s0 $a0 #s0 contains next position
+	la $s1 zombie1Position
+	lw $s1 0($s1)
+	add $a0 $s1 $s0 #get new position
+	jal ifNextBlockWall
+	
+	move $a0 $v0 
+	li $v0 1
+	syscall
+	beq $a0 0 moveZombie1 #find space to move
+	beq $a0 $s1 moveZombie1
+	
+	add $a0 $s1 $s0
+	li $v0 1
+	syscall
+	jal printNewLine
+	
+	move $a0 $s1
+	jal removeOldCharacter #remove old characters position
+	add $a0 $s1 $s0 #get new position
+	
+	la $s1 zombie1Position
+	sw $a0 0($s1)
+	
+	li $t5 64
+	div $a0 $t5
+	mflo $a1 
+	mfhi $a0
+	li $a2 1
+	jal _setLED
+
+	
+	lw $ra 0($sp)
+	lw $s0 4($sp)
+	lw $s1 8($sp)
+	addi $sp $sp 12
+	jr $ra
+	#if getRandomZombieDirection is yellow
+	
+	
