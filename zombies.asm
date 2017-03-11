@@ -198,14 +198,19 @@ rkey:	addi	$v0,$t0,-227		# check for right key press
 	bne	$v0,$0,lkey		# wasn't right key, so check for center
 	#move char to right
 	move $a0 $t9
+	addi $a0 $a0 1 #add one for the if statement
+	jal ifNextBlockWall
+	beq $v0 0 poll #ifNextBlockWall returns false
+	addi $a0 $a0 -1 #go back to original position to remove old character
+	
 	jal removeOldCharacter
 	addi $t9 $t9 1
 	move $a0 $t9	
 	li $v0 1
 	syscall
 	jal drawCharacter
-	
-	j	poll	
+	j	poll
+
 
 lkey:	addi	$v0,$t0,-226		# check for right key press
 	bne	$v0,$0,dkey		# wasn't right key, so check for center
@@ -248,10 +253,10 @@ ukey:	addi	$v0,$t0,-224		# check for right key press
 
 #takes next block in a0 as parameter	
 ifNextBlockWall:
-	addi $sp $sp -4
+	addi $sp $sp -8
 	sw $ra 0($sp)
-	
-	
+	sw $t0 4($sp)
+	move $t8 $a0
 	#a0 is a number
 	li $t0 64
 	div $a0 $t0
@@ -265,15 +270,18 @@ ifNextBlockWall:
 
 returnFalse:
 	lw $ra 0($sp)
-	addi $sp $sp 4
+	lw $t0 4($sp)
+	addi $sp $sp 8
 	li $v0 0
+	move $a0 $t8
 	jr $ra
 returnTrue:
 	lw $ra 0($sp)
-	addi $sp $sp 4
+	lw $t0 4($sp)
+	addi $sp $sp 8
 	li $v0 1
+	move $a0 $t8
 	jr $ra
-
 #a0 paramter
 removeOldCharacter:
 	addi $sp $sp -4
