@@ -1,7 +1,7 @@
 .data 
 maze:	.ascii
 	# 0123456701234567012345670123456701234567012345670123456701234567
-	 " cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",    # 0
+	 "  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",    # 0
 	 "x      xx      xx      xx      xx      xx      xx      xx      x",    # 1
 	 "x xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx xx xxxx x",    # 2
 	 "x x  x xx x  x xx x  x xx x  x xx x  x xx x  x xx x  x xx x  x x",    # 3
@@ -77,7 +77,7 @@ called: .asciiz "called\n"
 
 jal drawBoard
 li $t9 0
-move $a0 $t9
+move $a0 $t9 #should probably hold this somewhere other than t9 DONT USE t9 FOR TEMP
 jal drawCharacter
 #li $a0 0
 j poll
@@ -211,6 +211,7 @@ lkey:	addi	$v0,$t0,-226		# check for right key press
 	bne	$v0,$0,dkey		# wasn't right key, so check for center
 	#move char to right
 	move $a0 $t9
+	
 	jal removeOldCharacter
 	addi $t9 $t9 -1
 	move $a0 $t9
@@ -243,9 +244,36 @@ ukey:	addi	$v0,$t0,-224		# check for right key press
 	li $v0 1
 	syscall
 	jal drawCharacter
-	
 	j	poll															
+
+#takes next block in a0 as parameter	
+ifNextBlockWall:
+	addi $sp $sp -4
+	sw $ra 0($sp)
 	
+	
+	#a0 is a number
+	li $t0 64
+	div $a0 $t0
+	mflo $a1 
+	mfhi $a0
+	
+	jal _getLED
+	beq $v0 2 returnFalse
+	j returnTrue
+	
+
+returnFalse:
+	lw $ra 0($sp)
+	addi $sp $sp 4
+	li $v0 0
+	jr $ra
+returnTrue:
+	lw $ra 0($sp)
+	addi $sp $sp 4
+	li $v0 1
+	jr $ra
+
 #a0 paramter
 removeOldCharacter:
 	addi $sp $sp -4
