@@ -237,10 +237,13 @@ _getLED:
 
 poll:	
 	jal hasZombie1TimeElapsed #move zombie if time elapsed
-	jal hasZombie2TimeElapsed #move zombie if time elapsed
-	jal hasZombie3TimeElapsed #move zombie if time elapsed
-	jal hasZombie4TimeElapsed #move zombie if time elapsed
-	
+	#jal hasZombie2TimeElapsed #move zombie if time elapsed
+	#jal hasZombie3TimeElapsed #move zombie if time elapsed
+	#jal hasZombie4TimeElapsed #move zombie if time elapsed
+	jal checkCollision1
+	jal checkCollision2
+	jal checkCollision3
+	jal checkCollision4
 	
 	beq $t9 4095 wonGame
 	la	$v0,0xffff0000		# address for reading key press status
@@ -266,9 +269,9 @@ bkey:
 	
 	#start zombie times
 	jal setZombie1TimeCurrent
-	jal setZombie2TimeCurrent
-	jal setZombie3TimeCurrent
-	jal setZombie4TimeCurrent
+	#jal setZombie2TimeCurrent
+	#jal setZombie3TimeCurrent
+	#jal setZombie4TimeCurrent
 	
 
 	j poll		
@@ -286,8 +289,8 @@ rkey:	addi	$v0,$t0,-227		# check for right key press
 	addi $t9 $t9 1
 	move $a0 $t9	
 	addi $t7 $t7 1
-	#li $v0 1
-	#syscall
+	li $v0 1
+	syscall
 	jal drawCharacter
 	j	poll
 
@@ -514,9 +517,9 @@ hasZombie1TimeElapsed:
 	move $s0 $v0 
 	blt $s0 500 returnFalseTime
 	jal setZombie1TimeCurrent #save zombies time as current if worked
-	li $a0 1
-	li $v0 1
-	syscall
+	#li $a0 1
+	#li $v0 1
+	#syscall
 	j returnTrueTime
 
 hasZombie2TimeElapsed:
@@ -643,4 +646,63 @@ drawZombie4:
 	lw $ra 0($sp)
 	addi $sp $sp 4
 	jr $ra
+
+checkCollision1:
+	addi $sp $sp -8
+	sw $ra 0($sp)
+	sw $s0 4($sp)
+	#t9 is user
 	
+	la $s0 zombie1Position
+	lw $s0 0($s0)
+	beq $s0 $t9 lostGame
+	
+	lw $ra 0($sp)
+	lw $s0 4($sp)
+	addi $sp $sp 8
+	
+	jr $ra
+checkCollision2:
+	addi $sp $sp -8
+	sw $ra 0($sp)
+	sw $s0 4($sp)
+	#t9 is user
+	
+	la $s0 zombie2Position
+	lw $s0 0($s0)
+	beq $s0 $t9 lostGame
+	
+	lw $ra 0($sp)
+	lw $s0 4($sp)
+	addi $sp $sp 8
+	jr $ra
+
+checkCollision3:
+	addi $sp $sp -8
+	sw $ra 0($sp)
+	sw $s0 4($sp)
+	#t9 is user
+	
+	la $s0 zombie3Position
+	lw $s0 0($s0)
+	beq $s0 $t9 lostGame
+	
+	lw $ra 0($sp)
+	lw $s0 4($sp)
+	addi $sp $sp 8
+	
+	jr $ra
+checkCollision4:
+	addi $sp $sp -8
+	sw $ra 0($sp)
+	sw $s0 4($sp)
+	#t9 is user
+	
+	la $s0 zombie4Position
+	lw $s0 0($s0)
+	beq $s0 $t9 lostGame
+	
+	lw $ra 0($sp)
+	lw $s0 4($sp)
+	addi $sp $sp 8
+	jr $ra
