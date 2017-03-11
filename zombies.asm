@@ -75,11 +75,7 @@ called: .asciiz "called\n"
 #li $v0 11
 #syscall
 
-jal drawBoard
-li $t9 0
-move $a0 $t9 #should probably hold this somewhere other than t9 DONT USE t9 FOR TEMP
-jal drawCharacter
-#li $a0 0
+
 j poll
 
 #jal removeOldCharacter
@@ -192,7 +188,17 @@ poll:	la	$v0,0xffff0000		# address for reading key press status
 	beq	$t0,$0,poll		# no key pressed
 	lw	$t0,4($v0)		# read key value
 	
-	
+bkey:
+	addi $v0, $t0 -66
+	bne $v0, $0, rkey	
+	jal drawBoard
+	li $t9 0
+	move $a0 $t9 #should probably hold this somewhere other than t9 DONT USE t9 FOR TEMP
+	jal drawCharacter
+	li $v0 4
+	la $a0 called
+	syscall
+	j poll		
 	
 rkey:	addi	$v0,$t0,-227		# check for right key press
 	bne	$v0,$0,lkey		# wasn't right key, so check for center
@@ -262,7 +268,9 @@ ukey:	addi	$v0,$t0,-224		# check for right key press
 	li $v0 1
 	syscall
 	jal drawCharacter
-	j	poll															
+	j	poll		
+
+										
 
 #takes next block in a0 as parameter	
 ifNextBlockWall:
