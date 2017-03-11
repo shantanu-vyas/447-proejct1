@@ -83,10 +83,10 @@ zombie3Dir:		.byte 0 1 2 3
 zombie4Position:	.word 0
 zombie4Dir: 		.byte 0 1 2 3
 
-zombie1Time:	.byte 0
-zombie2Time:	.byte 0
-zombie3Time:	.byte 0
-zombie4Time:	.byte 0
+zombie1Time:	.word 0
+zombie2Time:	.word 0
+zombie3Time:	.word 0
+zombie4Time:	.word 0
 
 quadrant1MinX:	.byte 0
 quadrant1MinY:	.byte 0
@@ -117,6 +117,7 @@ quadrant4MaxY:	.byte 64
 #syscall
 #move $a0 $t1
 #jal getTimeDifference
+
 
 j poll
 
@@ -240,9 +241,13 @@ bkey:
 	li $t7 0 #turn counter
 	move $a0 $t9 #should probably hold this somewhere other than t9 DONT USE t9 FOR TEMP
 	jal drawCharacter
-	#li $v0 4
-	#la $a0 called
-	#syscall
+	
+	#start zombie times
+	jal setZombie1TimeCurrent
+	jal setZombie2TimeCurrent
+	jal setZombie3TimeCurrent
+	jal setZombie4TimeCurrent
+	
 	j poll		
 	
 rkey:	addi	$v0,$t0,-227		# check for right key press
@@ -436,3 +441,112 @@ printNumber:
 	li $v0 1
 	syscall
 	jr $ra
+
+#in retrospect should have made zombies current time an array. Ohwhale. modular programming is for chumps.	
+setZombie1TimeCurrent:
+	addi $sp $sp -4
+	sw $ra 0($sp)
+	jal getTime
+	sw $a0 zombie1Time
+	lw $ra 0($sp)
+	addi $sp $sp 4
+	jr $ra
+
+setZombie2TimeCurrent:
+	addi $sp $sp -4
+	sw $ra 0($sp)
+	jal getTime
+	sw $a0 zombie2Time
+	lw $ra 0($sp)
+	addi $sp $sp 4
+	jr $ra
+
+setZombie3TimeCurrent:
+	addi $sp $sp -4
+	sw $ra 0($sp)
+	jal getTime
+	sw $a0 zombie3Time
+	lw $ra 0($sp)
+	addi $sp $sp 4
+	jr $ra
+setZombie4TimeCurrent:
+	addi $sp $sp -4
+	sw $ra 0($sp)
+	jal getTime
+	sw $a0 zombie4Time
+	lw $ra 0($sp)
+	addi $sp $sp 4
+	jr $ra
+
+
+hasZombie1TimeElapsed:
+	addi $sp $sp -8
+	sw $ra 0($sp)
+	sw $s0 4($sp)
+	
+	la $s0 zombie1Time
+	lw $s0 0($s0)
+	move $a0 $s0
+	jal getTimeDifference
+	move $s0 $v0 
+	blt $s0 500 returnFalseTime
+	jal setZombie1TimeCurrent #save zombies time as current if worked
+	j returnTrueTime
+
+hasZombie2TimeElapsed:
+	addi $sp $sp -8
+	sw $ra 0($sp)
+	sw $s0 4($sp)
+	
+	la $s0 zombie2Time
+	lw $s0 0($s0)
+	move $a0 $s0
+	jal getTimeDifference
+	move $s0 $v0 
+	blt $s0 500 returnFalseTime
+	jal setZombie2TimeCurrent #save zombies time as current if worked
+	j returnTrueTime
+
+hasZombie3TimeElapsed:
+	addi $sp $sp -8
+	sw $ra 0($sp)
+	sw $s0 4($sp)
+	
+	la $s0 zombie3Time
+	lw $s0 0($s0)
+	move $a0 $s0
+	jal getTimeDifference
+	move $s0 $v0 
+	blt $s0 500 returnFalseTime
+	jal setZombie3TimeCurrent #save zombies time as current if worked
+	j returnTrueTime
+
+hasZombie4TimeElapsed:
+	addi $sp $sp -8
+	sw $ra 0($sp)
+	sw $s0 4($sp)
+	
+	la $s0 zombie4Time
+	lw $s0 0($s0)
+	move $a0 $s0
+	jal getTimeDifference
+	move $s0 $v0 
+	blt $s0 500 returnFalseTime
+	jal setZombie4TimeCurrent #save zombies time as current if worked
+	j returnTrueTime
+
+
+returnTrueTime:
+	lw $ra 0($sp)
+	lw $s0 4($sp)
+	addi $sp $sp 8
+	li $v0 1
+	jr $ra
+	
+returnFalseTime:
+	lw $ra 0($sp)
+	lw $s0 4($sp)
+	addi $sp $sp 8
+	li $v0 0
+	jr $ra
+	
