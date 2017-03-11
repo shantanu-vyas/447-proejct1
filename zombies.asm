@@ -743,12 +743,15 @@ returnRight:
 	addi $sp $sp 4
 	jr $ra
 
-
 moveZombie1:
 	addi $sp $sp -12
 	sw $ra 0($sp)
 	sw $s0 4($sp)
 	sw $s1 8($sp)
+	
+	j moveZombie1LoopShit
+	
+moveZombie1LoopShit:
 	
 	jal getRandomZombieDirection
 	move $s0 $a0 #s0 contains next position
@@ -757,16 +760,14 @@ moveZombie1:
 	add $a0 $s1 $s0 #get new position
 	jal ifNextBlockWall
 	
-	move $a0 $v0 
-	li $v0 1
-	syscall
-	beq $a0 0 moveZombie1 #find space to move
-	beq $a0 $s1 moveZombie1
+	
+	beq $v0 0 moveZombie1LoopShit #find space to move
+	beq $a0 $s1 moveZombie1LoopShit
 	
 	add $a0 $s1 $s0
-	li $v0 1
-	syscall
-	jal printNewLine
+	#li $v0 1
+	#syscall
+	#jal printNewLine
 	
 	move $a0 $s1
 	jal removeOldCharacter #remove old characters position
