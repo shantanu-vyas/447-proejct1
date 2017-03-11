@@ -216,33 +216,46 @@ lkey:	addi	$v0,$t0,-226		# check for right key press
 	bne	$v0,$0,dkey		# wasn't right key, so check for center
 	#move char to right
 	move $a0 $t9
+	addi $a0 $a0 -1
+	jal ifNextBlockWall
+	beq $v0 0 poll
+	addi $a0 $a0 1
 	
 	jal removeOldCharacter
 	addi $t9 $t9 -1
 	move $a0 $t9
 	li $v0 1
 	syscall
-	jal drawCharacter
-	
+	jal drawCharacter		
 	j	poll	
 
 dkey:	addi	$v0,$t0,-225		# check for right key press
 	bne	$v0,$0,ukey		# wasn't right key, so check for center
 	#move char to right
 	move $a0 $t9
+	addi $a0 $a0 64
+	jal ifNextBlockWall
+	beq $v0 0 poll
+	addi $a0 $a0 -64
 	jal removeOldCharacter
 	addi $t9 $t9 64
 	move $a0 $t9
 	li $v0 1
 	syscall
 	jal drawCharacter
-	
 	j	poll	
+	
+
 
 ukey:	addi	$v0,$t0,-224		# check for right key press
 	bne	$v0,$0,poll		# wasn't right key, so check for center
 	#move char to right
 	move $a0 $t9
+	addi $a0 $a0 -64
+	jal ifNextBlockWall
+	beq $v0 0 poll
+	addi $a0 $a0 64
+
 	jal removeOldCharacter
 	addi $t9 $t9 -64
 	move $a0 $t9
