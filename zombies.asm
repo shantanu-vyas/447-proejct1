@@ -69,6 +69,9 @@ maze:	.ascii
 	# be set to off.
 foundX:	.asciiz "found an x \n"
 called: .asciiz "called\n"
+won:	.asciiz "Success! You won! Your score is "
+wonTurns:	.asciiz " moves."
+lost: 	.asciiz "Sorry. You were captured."
 .text
 #la $a0 maze
 #lb $a0 0($a0)
@@ -182,7 +185,9 @@ _getLED:
 	andi $v0,$t2,0x3    # mask off any remaining upper bits
 	jr   $ra
 
-poll:	la	$v0,0xffff0000		# address for reading key press status
+poll:	
+	beq $t9 4095 wonGame
+	la	$v0,0xffff0000		# address for reading key press status
 	lw	$t0,0($v0)		# read the key press status
 	andi	$t0,$t0,1
 	beq	$t0,$0,poll		# no key pressed
@@ -192,12 +197,13 @@ bkey:
 	addi $v0, $t0 -66
 	bne $v0, $0, rkey	
 	jal drawBoard
-	li $t9 0
+	li $t9 0 #player position
+	li $t8 0 #turn counter
 	move $a0 $t9 #should probably hold this somewhere other than t9 DONT USE t9 FOR TEMP
 	jal drawCharacter
-	li $v0 4
-	la $a0 called
-	syscall
+	#li $v0 4
+	#la $a0 called
+	#syscall
 	j poll		
 	
 rkey:	addi	$v0,$t0,-227		# check for right key press
@@ -212,8 +218,8 @@ rkey:	addi	$v0,$t0,-227		# check for right key press
 	jal removeOldCharacter
 	addi $t9 $t9 1
 	move $a0 $t9	
-	li $v0 1
-	syscall
+	#li $v0 1
+	#syscall
 	jal drawCharacter
 	j	poll
 
@@ -230,8 +236,8 @@ lkey:	addi	$v0,$t0,-226		# check for right key press
 	jal removeOldCharacter
 	addi $t9 $t9 -1
 	move $a0 $t9
-	li $v0 1
-	syscall
+	#li $v0 1
+	#syscall
 	jal drawCharacter		
 	j	poll	
 
@@ -246,8 +252,8 @@ dkey:	addi	$v0,$t0,-225		# check for right key press
 	jal removeOldCharacter
 	addi $t9 $t9 64
 	move $a0 $t9
-	li $v0 1
-	syscall
+	#li $v0 1
+	#syscall
 	jal drawCharacter
 	j	poll	
 	
@@ -265,8 +271,8 @@ ukey:	addi	$v0,$t0,-224		# check for right key press
 	jal removeOldCharacter
 	addi $t9 $t9 -64
 	move $a0 $t9
-	li $v0 1
-	syscall
+	#li $v0 1
+	#syscall
 	jal drawCharacter
 	j	poll		
 
@@ -331,3 +337,22 @@ drawCharacter:
 	lw $ra 0($sp)
 	addi $sp $sp 4
 	jr $ra
+
+wonGame:
+	la $a0 won
+	li $v0 4
+	syscall
+	move $a0 $t8
+	li $v0 1
+	syscall
+	la $a0 wonTurns
+	li $v0 4
+	syscall
+	li $v0 10
+	syscall
+lostGame:
+	la $a0 lost
+	li $v0 4
+	syscall
+	li $v0 10
+	syscall
