@@ -74,13 +74,13 @@ wonTurns:	.asciiz " moves."
 lost: 	.asciiz "Sorry. You were captured."
 newline:	.asciiz "\n"
 
-zombie1Position:	.word 0
+zombie1Position:	.word 74
 zombie1Dir: 		.byte 0 1 2 3
-zombie2Position:	.word 0
+zombie2Position:	.word 1125
 zombie2Dir: 		.byte 0 1 2 3
-zombie3Position:	.word 0
+zombie3Position:	.word 2140
 zombie3Dir:		.byte 0 1 2 3
-zombie4Position:	.word 0
+zombie4Position:	.word 3897
 zombie4Dir: 		.byte 0 1 2 3
 
 zombie1Time:	.word 0
@@ -110,13 +110,23 @@ quadrant4MaxY:	.byte 64
 
 .text
 
+#jal setZombie1TimeCurrent
 #jal getTime
 #move $t1 $v0
-#li $a0 11
+#li $a0 400
 #li $v0 32
 #syscall
 #move $a0 $t1
 #jal getTimeDifference
+#move $a0 $v0
+#li $v0 1
+#syscall
+
+#jal printNewLine
+#jal hasZombie1TimeElapsed
+#move $a0 $v0
+#li $v0 1
+#syscall
 
 
 j poll
@@ -226,12 +236,20 @@ _getLED:
 	jr   $ra
 
 poll:	
+	jal hasZombie1TimeElapsed #move zombie if time elapsed
+	jal hasZombie2TimeElapsed #move zombie if time elapsed
+	jal hasZombie3TimeElapsed #move zombie if time elapsed
+	jal hasZombie4TimeElapsed #move zombie if time elapsed
+	
+	
 	beq $t9 4095 wonGame
 	la	$v0,0xffff0000		# address for reading key press status
 	lw	$t0,0($v0)		# read the key press status
 	andi	$t0,$t0,1
 	beq	$t0,$0,poll		# no key pressed
 	lw	$t0,4($v0)		# read key value
+	
+	#check zombies times do shit accordingly
 	
 bkey:
 	addi $v0, $t0 -66
@@ -241,6 +259,10 @@ bkey:
 	li $t7 0 #turn counter
 	move $a0 $t9 #should probably hold this somewhere other than t9 DONT USE t9 FOR TEMP
 	jal drawCharacter
+	jal drawZombie1
+	jal drawZombie2
+	jal drawZombie3
+	jal drawZombie4
 	
 	#start zombie times
 	jal setZombie1TimeCurrent
@@ -248,6 +270,7 @@ bkey:
 	jal setZombie3TimeCurrent
 	jal setZombie4TimeCurrent
 	
+
 	j poll		
 	
 rkey:	addi	$v0,$t0,-227		# check for right key press
@@ -478,7 +501,7 @@ setZombie4TimeCurrent:
 	addi $sp $sp 4
 	jr $ra
 
-
+#change this all zombies will have the same update times dont need 4 methods
 hasZombie1TimeElapsed:
 	addi $sp $sp -8
 	sw $ra 0($sp)
@@ -491,6 +514,9 @@ hasZombie1TimeElapsed:
 	move $s0 $v0 
 	blt $s0 500 returnFalseTime
 	jal setZombie1TimeCurrent #save zombies time as current if worked
+	li $a0 1
+	li $v0 1
+	syscall
 	j returnTrueTime
 
 hasZombie2TimeElapsed:
@@ -548,5 +574,73 @@ returnFalseTime:
 	lw $s0 4($sp)
 	addi $sp $sp 8
 	li $v0 0
+	jr $ra
+	
+drawZombie1:
+	addi $sp $sp -4
+	sw $ra 0($sp)
+	
+	la $t0 zombie1Position
+	lw $t0 0($t0)
+	li $t1 64
+	div $t0 $t1
+	mflo $a1 
+	mfhi $a0
+	li $a2 1
+	jal _setLED
+	
+	lw $ra 0($sp)
+	addi $sp $sp 4
+	jr $ra
+	
+drawZombie2:	
+	addi $sp $sp -4
+	sw $ra 0($sp)
+	
+	la $t0 zombie2Position
+	lw $t0 0($t0)
+	li $t1 64
+	div $t0 $t1
+	mflo $a1 
+	mfhi $a0
+	li $a2 1
+	jal _setLED
+	
+	lw $ra 0($sp)
+	addi $sp $sp 4
+	jr $ra
+	
+drawZombie3:
+	addi $sp $sp -4
+	sw $ra 0($sp)
+	
+	la $t0 zombie3Position
+	lw $t0 0($t0)
+	li $t1 64
+	div $t0 $t1
+	mflo $a1 
+	mfhi $a0
+	li $a2 1
+	jal _setLED
+	
+	lw $ra 0($sp)
+	addi $sp $sp 4
+	jr $ra
+	
+drawZombie4:
+	addi $sp $sp -4
+	sw $ra 0($sp)
+	
+	la $t0 zombie4Position
+	lw $t0 0($t0)
+	li $t1 64
+	div $t0 $t1
+	mflo $a1 
+	mfhi $a0
+	li $a2 1
+	jal _setLED
+	
+	lw $ra 0($sp)
+	addi $sp $sp 4
 	jr $ra
 	
