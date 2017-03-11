@@ -72,12 +72,51 @@ called: .asciiz "called\n"
 won:	.asciiz "Success! You won! Your score is "
 wonTurns:	.asciiz " moves."
 lost: 	.asciiz "Sorry. You were captured."
-.text
-#la $a0 maze
-#lb $a0 0($a0)
-#li $v0 11
-#syscall
+newline:	.asciiz "\n"
 
+zombie1Position:	.word 0
+zombie1Dir: 		.byte 0 1 2 3
+zombie2Position:	.word 0
+zombie2Dir: 		.byte 0 1 2 3
+zombie3Position:	.word 0
+zombie3Dir:		.byte 0 1 2 3
+zombie4Position:	.word 0
+zombie4Dir: 		.byte 0 1 2 3
+
+zombie1Time:	.byte 0
+zombie2Time:	.byte 0
+zombie3Time:	.byte 0
+zombie4Time:	.byte 0
+
+quadrant1MinX:	.byte 0
+quadrant1MinY:	.byte 0
+quadrant1MaxX:	.byte 32
+quadrant1MaxY:	.byte 32
+
+quadrant2MinX:	.byte 32
+quadrant2MinY:	.byte 0
+quadrant2MaxX:	.byte 64
+quadrant2MaxY:	.byte 32
+
+quadrant3MinX:	.byte 0
+quadrant3MinY:	.byte 32
+quadrant3MaxX:	.byte 32
+quadrant3MaxY:	.byte 64
+
+quadrant4MinX:	.byte 32
+quadrant4MinY:	.byte 32
+quadrant4MaxX:	.byte 64
+quadrant4MaxY:	.byte 64
+
+.text
+
+#jal getTime
+#move $t1 $v0
+#li $a0 11
+#li $v0 32
+#syscall
+#move $a0 $t1
+#jal getTimeDifference
 
 j poll
 
@@ -360,3 +399,40 @@ lostGame:
 	syscall
 	li $v0 10
 	syscall
+	
+#puts the time in $v0 
+getTime:
+	li $v0 30
+	syscall
+	sub $a0 $zero $a0 #time comes as negative number
+	move $v0 $a0 
+	jr $ra
+	#syscall
+	
+#takes zombie time as parameter $a0
+getTimeDifference:
+	addi $sp $sp -4
+	sw $ra 0($sp)
+	
+	move $s0 $a0 #move parameter time to $s0
+		
+	jal getTime
+	move $s1 $v0 #current time is in s1 now
+	sub $v0 $s0 $s1
+		
+	lw $ra 0($sp)
+	addi $sp $sp 4
+	jr $ra
+
+
+printNewLine:
+	la $a0 newline
+	li $v0 4
+	syscall
+	jr $ra
+
+#number in $a0
+printNumber:
+	li $v0 1
+	syscall
+	jr $ra
