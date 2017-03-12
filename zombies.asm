@@ -716,10 +716,15 @@ getRandomZombieDirection:
 	li $a1 4
 	syscall
 	
+	
+	#li $v0 1
+	#syscall
+
+	
 	beq $a0 0 returnUp
 	beq $a0 1 returnDown
 	beq $a0 2 returnLeft
-	beq $a0 3 returnRight	
+	#beq $a0 3 returnRight	
 	
 	
 returnUp:
@@ -754,6 +759,11 @@ moveZombie1:
 moveZombie1LoopShit:
 	
 	jal getRandomZombieDirection
+	move $a0 $v0
+	#li $v0 1
+	#syscall
+	#jal printNewLine
+	
 	move $s0 $a0 #s0 contains next position
 	la $s1 zombie1Position
 	lw $s1 0($s1)
@@ -763,11 +773,9 @@ moveZombie1LoopShit:
 	
 	beq $v0 0 moveZombie1LoopShit #find space to move
 	beq $a0 $s1 moveZombie1LoopShit
-	
+
 	add $a0 $s1 $s0
-	#li $v0 1
-	#syscall
-	#jal printNewLine
+	
 	
 	move $a0 $s1
 	jal removeOldCharacter #remove old characters position
