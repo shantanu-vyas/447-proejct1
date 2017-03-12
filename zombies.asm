@@ -74,7 +74,7 @@ wonTurns:	.asciiz " moves."
 lost: 	.asciiz "Sorry. You were captured."
 newline:	.asciiz "\n"
 
-zombie1Position:	.word 74
+zombie1Position:	.word 73
 zombie1Dir: 		.byte 0 1 2 3
 zombie2Position:	.word 1125
 zombie2Dir: 		.byte 0 1 2 3
@@ -724,8 +724,13 @@ getRandomZombieDirection:
 	beq $a0 0 returnUp
 	beq $a0 1 returnDown
 	beq $a0 2 returnLeft
-	#beq $a0 3 returnRight	
+	beq $a0 3 returnRight	
 	
+	#this is here for testing when i comment out the if statements^^
+	li $v0 0
+	lw $ra 0($sp)
+	addi $sp $sp 4
+	jr $ra
 	
 returnUp:
 	li $v0 -64
@@ -771,10 +776,15 @@ moveZombie1LoopShit:
 	jal ifNextBlockWall
 	
 	
-	beq $v0 0 moveZombie1LoopShit #find space to move
-	beq $a0 $s1 moveZombie1LoopShit
+	beq $v0 0 moveZombie1LoopShit #find again if zombro is hitting a wall
+	beq $a0 $s1 moveZombie1LoopShit 
+	
+	add $a0 $s1 $s0 #get new position since old values got clobbered
+	
+	jal zombie1CheckBounds
+	beq $v0 0 moveZombie1LoopShit
 
-	add $a0 $s1 $s0
+	#add $a0 $s1 $s0 #got clobbered again by zombie1checkbounds
 	
 	
 	move $a0 $s1
@@ -797,6 +807,41 @@ moveZombie1LoopShit:
 	lw $s1 8($sp)
 	addi $sp $sp 12
 	jr $ra
-	#if getRandomZombieDirection is yellow
+
+#takes a0 as next position, returns 0 if you cant move, 1 if you can
+zombie1CheckBounds:
+	addi $sp $sp -8
+	sw $s0 0($sp)
+	sw $s1 4($sp)
+	
+	#move $a0 $s0
+	li $s1 64
+	div $a0 $s1
+	mflo $a1 
+	mfhi $a0
+	
+
+	
+	blt $a0 $0 zombie1BoundsReturnFalse
+	bgt $a0 32 zombie1BoundsReturnFalse
+	blt $a1 $0 zombie1BoundsReturnFalse
+	bgt $a1 32 zombie1BoundsReturnFalse
+	j zombie1BoundsReturnTrue
+	
+zombie1BoundsReturnFalse:
+	lw $s0 0($sp)
+	lw $s1 4($sp)
+	addi $sp $sp 8
+	
+	li $v0 0
+	jr $ra
+
+zombie1BoundsReturnTrue:
 	
 	
+	lw $s0 0($sp)
+	lw $s1 4($sp)
+	addi $sp $sp 8
+	li $v0 1
+	jr $ra
+
