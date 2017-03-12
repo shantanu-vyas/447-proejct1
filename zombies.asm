@@ -564,6 +564,7 @@ hasZombie4TimeElapsed:
 
 returnTrueTime:
 	jal moveZombie1
+	jal moveZombie2
 	lw $ra 0($sp)
 	lw $s0 4($sp)
 	addi $sp $sp 8
@@ -808,6 +809,59 @@ moveZombie1LoopShit:
 	addi $sp $sp 12
 	jr $ra
 
+moveZombie2:
+	addi $sp $sp -12
+	sw $ra 0($sp)
+	sw $s0 4($sp)
+	sw $s1 8($sp)
+	
+	j moveZombie2LoopShit
+moveZombie2LoopShit:
+	
+	jal getRandomZombieDirection
+	move $a0 $v0
+	#li $v0 1
+	#syscall
+	#jal printNewLine
+	
+	move $s0 $a0 #s0 contains next position
+	la $s1 zombie2Position
+	lw $s1 0($s1)
+	add $a0 $s1 $s0 #get new position
+	jal ifNextBlockWall
+	
+	
+	beq $v0 0 moveZombie2LoopShit #find again if zombro is hitting a wall
+	beq $a0 $s1 moveZombie2LoopShit 
+	
+	add $a0 $s1 $s0 #get new position since old values got clobbered
+	
+	jal zombie2CheckBounds
+	beq $v0 0 moveZombie2LoopShit
+
+	
+	move $a0 $s1
+	jal removeOldCharacter #remove old characters position
+	add $a0 $s1 $s0 #get new position
+	
+	la $s1 zombie2Position
+	sw $a0 0($s1)
+	
+	li $t5 64
+	div $a0 $t5
+	mflo $a1 
+	mfhi $a0
+	li $a2 1
+	jal _setLED
+
+	
+	lw $ra 0($sp)
+	lw $s0 4($sp)
+	lw $s1 8($sp)
+	addi $sp $sp 12
+	jr $ra
+	
+
 #takes a0 as next position, returns 0 if you cant move, 1 if you can
 zombie1CheckBounds:
 	addi $sp $sp -8
@@ -820,15 +874,32 @@ zombie1CheckBounds:
 	mflo $a1 
 	mfhi $a0
 	
+	blt $a0 $0 zombieBoundsReturnFalse
+	bgt $a0 32 zombieBoundsReturnFalse
+	blt $a1 $0 zombieBoundsReturnFalse
+	bgt $a1 32 zombieBoundsReturnFalse
+	j zombieBoundsReturnTrue
+
+zombie2CheckBounds:
+	addi $sp $sp -8
+	sw $s0 0($sp)
+	sw $s1 4($sp)
+	
+	#move $a0 $s0
+	li $s1 64
+	div $a0 $s1
+	mflo $a1 
+	mfhi $a0
+	
+	blt $a0 32 zombieBoundsReturnFalse
+	bgt $a0 64 zombieBoundsReturnFalse
+	blt $a1 0 zombieBoundsReturnFalse
+	bgt $a1 32 zombieBoundsReturnFalse
+	j zombieBoundsReturnTrue
 
 	
-	blt $a0 $0 zombie1BoundsReturnFalse
-	bgt $a0 32 zombie1BoundsReturnFalse
-	blt $a1 $0 zombie1BoundsReturnFalse
-	bgt $a1 32 zombie1BoundsReturnFalse
-	j zombie1BoundsReturnTrue
 	
-zombie1BoundsReturnFalse:
+zombieBoundsReturnFalse:
 	lw $s0 0($sp)
 	lw $s1 4($sp)
 	addi $sp $sp 8
@@ -836,7 +907,7 @@ zombie1BoundsReturnFalse:
 	li $v0 0
 	jr $ra
 
-zombie1BoundsReturnTrue:
+zombieBoundsReturnTrue:
 	
 	
 	lw $s0 0($sp)
